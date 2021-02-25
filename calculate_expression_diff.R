@@ -55,14 +55,6 @@ plot_paralogs<-function(og){
   ple2_ex <- ple_counts %>% filter(rowname == as.character(ple2)) %>% select(PLEfemaleFlower, PLEleaf, PLEmaleFlower, PLEpetiole, PLEroot, PLEvegBud) %>% as.character() %>% as.numeric() 
   
   
-  print(con1)
-  print(con2)
-  print(ple1)
-  print(ple2)
-  print(con1_ex)
-  print(con2_ex)
-  print(ple1_ex)
-  print(ple2_ex)
   
   up_lim<-max(c(con1_ex, con2_ex, ple1_ex, ple2_ex)) +1
   low_lim<-min(c(con1_ex, con2_ex, ple1_ex, ple2_ex)) -1
@@ -123,8 +115,9 @@ calculate_difference<-function(l){
     to_return_list[["c1p2_diffs"]] <- c1p2_diff
     to_return_list[["c2p1_diffs"]] <- c2p1_diff
     to_return_list[["c2p2_diffs"]] <- c2p2_diff
+
     
-    c1c2_diff_sum<- sum(c1c2_diff)
+    c1c2_diff_sum <- sum(c1c2_diff)
     p1p2_diff_sum <- sum(p1p2_diff)
     c1p1_diff_sum <- sum(c1p1_diff)
     c1p2_diff_sum <- sum(c1p2_diff)
@@ -137,23 +130,41 @@ calculate_difference<-function(l){
     c1p2_maxdiff <- max(c1p2_diff)
     c2p1_maxdiff <- max(c2p1_diff)
     c2p2_maxdiff <- max(c2p2_diff)
+    
+    to_return_list[["c1c2_diff_sum"]] <- c1c2_diff_sum
+    to_return_list[["p1p2_diff_sum"]] <- p1p2_diff_sum
+    to_return_list[["c1p1_diff_sum"]] <- c1p1_diff_sum
+    to_return_list[["c1p2_diff_sum"]] <- c1p2_diff_sum
+    to_return_list[["c2p1_diff_sum"]] <- c2p1_diff_sum
+    to_return_list[["c2p2_diff_sum"]] <- c2p2_diff_sum
 
     MDR_orth1 <- max(c(c1c2_maxdiff, p1p2_maxdiff))/min(c(c1c2_maxdiff, p1p2_maxdiff))
     MDR_para1 <- max(c(c1p1_maxdiff, c2p2_maxdiff))/min(c(c1p1_maxdiff, c2p2_maxdiff))
     MDR_para2 <- max(c(c1p2_maxdiff, c2p1_maxdiff))/min(c(c1p2_maxdiff, c2p1_maxdiff))
+    MDR_para3 <- max(c(c1p1_maxdiff, c1p2_maxdiff))/min(c(c1p1_maxdiff, c1p2_maxdiff))
+    MDR_para4 <- max(c(c2p2_maxdiff, c2p1_maxdiff))/min(c(c2p2_maxdiff, c2p1_maxdiff))
     
     SR_orth1 <- max(c(c1c2_diff_sum, p1p2_diff_sum))/min(c(c1c2_diff_sum, p1p2_diff_sum))
     SR_para1 <- max(c(c1p1_diff_sum, c2p2_diff_sum))/min(c(c1p1_diff_sum, c2p2_diff_sum))
     SR_para2 <- max(c(c1p2_diff_sum, c2p1_diff_sum))/min(c(c1p2_diff_sum, c2p1_diff_sum))
+    SR_para3 <- max(c(c1p1_diff_sum, c1p2_diff_sum))/min(c(c1p1_diff_sum, c1p2_diff_sum))
+    SR_para4 <- max(c(c2p2_diff_sum, c2p1_diff_sum))/min(c(c2p2_diff_sum, c2p1_diff_sum))
+
+    
     
     to_return_list[["MDR_orth1"]] <- MDR_orth1
     to_return_list[["MDR_para1"]] <- MDR_para1
     to_return_list[["MDR_para2"]] <- MDR_para2
+    to_return_list[["MDR_para3"]] <- MDR_para3
+    to_return_list[["MDR_para4"]] <- MDR_para4
     
     to_return_list[["SR_orth1"]] <- SR_orth1
     to_return_list[["SR_para1"]] <- SR_para1
     to_return_list[["SR_para2"]] <- SR_para2
+    to_return_list[["SR_para3"]] <- SR_para3
+    to_return_list[["SR_para4"]] <- SR_para4
 
+    
   }
   return(to_return_list)
 }
@@ -170,7 +181,7 @@ plot(log(diffs_df$sumdiffs), log(diffs_df$maxdiffs))
 "OG0000844"
 "OG0000819"
 "OG0000888"
-test2<-orthogroups %>% filter(orthogroup == "OG0000888")
+test2<-orthogroups %>% filter(orthogroup == "OG0000973")
 calculate_difference(test2)
 
 diffs_df %>% filter(maxdiffs < 1.5) %>% select(orthogroup)
@@ -178,19 +189,15 @@ plot_paralogs("OG0000888")
 # maxdiffs <1.5
 
 
-diffs_df<-data.frame(orthogroup=c(), 
-                     MDR_orth1=c(), 
-                     MDR_para1=c(), 
-                     MDR_para2=c(), 
-                     SR_orth1=c(), 
-                     SR_para1=c(), 
-                     SR_para2=c())
 
-# should all be pretty conserved
-diffs_df %>% filter(MDR_orth1 < 1.5 & MDR_para1 < 1.5 & MDR_para2 < 1.5)
-plot_paralogs("OG0001149")
-plot_paralogs("OG0000771")
-plot_paralogs("OG0001169")
+
+# all ratios are low is low
+diffs_df %>% filter(SR_orth1 < 1.3 & SR_para1 < 1.3 & SR_para2 < 1.3 & MDR_orth1 < 1.5 & MDR_para1 < 1.5 & MDR_para2 < 1.5) %>% select(orthogroup)
+
+
+
+test<-orthogroups %>% filter(orthogroup == "OG0000888")
+calculate_difference(test)
 
 
 
@@ -200,26 +207,18 @@ plot_paralogs("OG0001169")
 diffs_df %>% filter(MDR_orth1 < 1.5) %>% filter(MDR_para1 > 2 | MDR_para1 > 2)
 
 
-# OG0001071  6.121649  2.902226  3.528464 2.926645  2.572447  2.604369
-plot_paralogs("OG0001071")
 
-# OG0000606  1.854607  1.854728  4.678835 1.964908  2.021434  6.197488
-# where two orthologs are similar and two orthologs are not
-plot_paralogs("OG0000606")
-
-# OG0000682  3.450186  3.856872 30.261497 2.432495  2.460286 18.279981
-# DITTO where two orthologs are similar and two orthologs are not
-plot_paralogs("OG0000682")
-
-# OG0000963  1.885552  1.973281 31.012754 1.822713  1.913121 19.819666
-# DITTO
-plot_paralogs("OG0000963")
-
-
-# OG0001083  1.196543  1.112929  1.135611 1.312299  1.087589  1.036780
-# similar - all less than 1.5ish
-plot_paralogs("OG0001083")
-
+diffs_df<-data.frame(orthogroup=c(), 
+                     MDR_orth1=c(), 
+                     MDR_para1=c(), 
+                     MDR_para2=c(),
+                     MDR_para3=c(), 
+                     MDR_para4=c(),
+                     SR_orth1=c(), 
+                     SR_para1=c(), 
+                     SR_para2=c(),
+                     SR_para3=c(), 
+                     SR_para4=c())
 
 
 for (i in 1:length(rownames(orthogroups))){
@@ -237,19 +236,32 @@ for (i in 1:length(rownames(orthogroups))){
     MDR_orth1 <- con_ple_list[["MDR_orth1"]]
     MDR_para1 <- con_ple_list[["MDR_para1"]]
     MDR_para2 <- con_ple_list[["MDR_para2"]]
+    MDR_para3 <- con_ple_list[["MDR_para3"]]
+    MDR_para4 <- con_ple_list[["MDR_para4"]]
     
     SR_orth1 <- con_ple_list[["SR_orth1"]]
     SR_para1 <- con_ple_list[["SR_para1"]]
     SR_para2 <- con_ple_list[["SR_para2"]]
+    SR_para3 <- con_ple_list[["SR_para3"]]
+    SR_para4 <- con_ple_list[["SR_para4"]]
+    
+    print(MDR_para3)
+    print(MDR_para4)
+    print(SR_para3)
+    print(SR_para4)
     
 
     mydiffs<-data.frame(orthogroup=orthogroup, 
                         MDR_orth1=MDR_orth1, 
                         MDR_para1=MDR_para1, 
-                        MDR_para2=MDR_para2, 
+                        MDR_para2=MDR_para2,
+                        MDR_para3=MDR_para3, 
+                        MDR_para4=MDR_para4,
                         SR_orth1=SR_orth1, 
                         SR_para1=SR_para1, 
-                        SR_para2=SR_para2)
+                        SR_para2=SR_para2,
+                        SR_para3=SR_para3, 
+                        SR_para4=SR_para4)
     
 
     diffs_df<-rbind(diffs_df, mydiffs)
@@ -266,6 +278,52 @@ for (i in 1:length(rownames(orthogroups))){
   }
 }
  
+
+x<-diffs_df %>% select(orthogroup, MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4) %>% 
+  rowwise() %>% 
+  mutate(max=max(c(MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4)), 
+         min=min(c(MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4))) %>% 
+  mutate(MDRo1_min=min/MDR_orth1, MDR_p1_min=min/MDR_para1, MDR_p2_min=min/MDR_para2, MDR_p3_min=min/MDR_para3, MDR_p4_min=min/MDR_para4) %>%
+  mutate(MDRo1_max=MDR_orth1/max, MDR_p1_max=MDR_para1/max, MDR_p2_max=MDR_para2/max, MDR_p3_max=MDR_para3/max, MDR_p4_max=MDR_para4/max) %>%
+  select(-min, -max)
+  
+  
+
+
+x %>% data.frame()
+#OG0000654  3.589369  2.959965 12.919118  2.103268 18.181292 2.923557  2.416302  6.770899  1.558232 10.499425
+plot_paralogs("OG0000654")
+
+#OG0000682  3.450186  3.856872 30.261497 10.942561  1.394645 2.432495  2.460286 18.279981 10.409343  1.400984
+plot_paralogs("OG0000682")
+
+#OG0000689  3.247325 41.444500  3.156518  2.227006 58.742678 2.081218 47.051260  2.023502  1.073839 88.661654
+plot_paralogs("OG0000689")
+
+#OG0000749  5.303714  3.082321  6.074614  1.265988  2.495000 5.944943  3.434065  5.732187  1.178734  1.967558
+plot_paralogs("OG0000749")
+
+#OG0000784  3.237085  3.601510 10.141053  2.515502 14.519214 4.217085  3.383158 10.581139  2.543004 14.076923
+plot_paralogs("OG0000784")
+
+#OG0000760  1.544114  1.647049  1.535229  3.215405  1.271617 1.511038  2.039850  2.060357  3.319786  1.265991
+plot_paralogs("OG0000760")
+
+#OG0000765  1.893011  3.356271  2.177789  1.288507  1.196065 1.179970  1.380102  2.687931  1.225422  2.386671
+plot_paralogs("OG0000765")
+
+#OG0000805  1.953466  5.103871  1.640552  2.311589  1.345857 1.402595  7.704918  1.370164  3.365170  1.671047
+plot_paralogs("OG0000805")
+
+#OG0000819  1.021309  4.224744  1.083244  6.643145  1.703333 1.311555  5.600788  1.569478  8.962190  2.511426
+plot_paralogs("OG0000819")
+
+
+
+#OG0000643  4.648703  1.000861  1.164995  1.388293  1.190648
+plot_paralogs("OG0000643")
+
+1 ortholog red/blue similar = 
 
 
 
