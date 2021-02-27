@@ -174,9 +174,6 @@ calculate_difference<-function(l){
 
 
 
-
-plot(log(diffs_df$sumdiffs), log(diffs_df$maxdiffs))
-
 # of interest
 "OG0000844"
 "OG0000819"
@@ -245,11 +242,6 @@ for (i in 1:length(rownames(orthogroups))){
     SR_para3 <- con_ple_list[["SR_para3"]]
     SR_para4 <- con_ple_list[["SR_para4"]]
     
-    print(MDR_para3)
-    print(MDR_para4)
-    print(SR_para3)
-    print(SR_para4)
-    
 
     mydiffs<-data.frame(orthogroup=orthogroup, 
                         MDR_orth1=MDR_orth1, 
@@ -287,43 +279,116 @@ x<-diffs_df %>% select(orthogroup, MDR_orth1, MDR_para1, MDR_para2, MDR_para3, M
   mutate(MDRo1_max=MDR_orth1/max, MDR_p1_max=MDR_para1/max, MDR_p2_max=MDR_para2/max, MDR_p3_max=MDR_para3/max, MDR_p4_max=MDR_para4/max) %>%
   select(-min, -max)
   
-  
 
 
-x %>% data.frame()
-#OG0000654  3.589369  2.959965 12.919118  2.103268 18.181292 2.923557  2.416302  6.770899  1.558232 10.499425
+
+
+######################################################################
+
+# SIMILAR ORTHOLOGS
+
+similar_orthologs<-x %>% 
+  filter(length(which(c(MDR_para1, MDR_para2, MDR_para3, MDR_para4) < 1.5)) == 2 & 
+           length(which(c(MDR_para1, MDR_para2, MDR_para3, MDR_para4) > 2)) == 2 &
+           MDR_orth1 < 1.3
+  ) %>% 
+  select(orthogroup, MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4) %>% data.frame()
+
+plot_paralogs("OG0000675")
+plot_paralogs("OG0000704")
+plot_paralogs("OG0000719")
+plot_paralogs("OG0000729")
+plot_paralogs("OG0000730")
+plot_paralogs("OG0000735")
+plot_paralogs("OG0000750")
+plot_paralogs("OG0000810")
+plot_paralogs("OG0000888")
+plot_paralogs("OG0000990")
+plot_paralogs("OG0001004")
+plot_paralogs("OG0001089")
+plot_paralogs("OG0001130")
+plot_paralogs("OG0001203")
+plot_paralogs("OG0001215")
+plot_paralogs("OG0001223")
+plot_paralogs("OG0001239")
+plot_paralogs("OG0001271")
+plot_paralogs("OG0001285")
+
+
+
+######################################################################
+
+
+# ONE CONSERVED ONE DIVERGED
+one_con_one_div<-x %>% 
+  filter(length(which(c(MDRo1_max, MDR_p1_max, MDR_p2_max, MDR_p3_max, MDR_p4_max) < 0.3)) > 1 & 
+           length(which(c(MDRo1_max, MDR_p1_max, MDR_p2_max, MDR_p3_max, MDR_p4_max) > 0.7)) > 1
+  ) %>% 
+  select(orthogroup, MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4) %>% data.frame()
+plot_paralogs("OG0000651")
 plot_paralogs("OG0000654")
-
-#OG0000682  3.450186  3.856872 30.261497 10.942561  1.394645 2.432495  2.460286 18.279981 10.409343  1.400984
-plot_paralogs("OG0000682")
-
-#OG0000689  3.247325 41.444500  3.156518  2.227006 58.742678 2.081218 47.051260  2.023502  1.073839 88.661654
 plot_paralogs("OG0000689")
+plot_paralogs("OG0000712")
+plot_paralogs("OG0000729")
+plot_paralogs("OG0000733")
+plot_paralogs("OG0000735")
+plot_paralogs("OG0000860")
+plot_paralogs("OG0000888")
+plot_paralogs("OG0000915")
+plot_paralogs("OG0000960")
+plot_paralogs("OG0000963")
+plot_paralogs("OG0000985")
+plot_paralogs("OG0001005")
+plot_paralogs("OG0001015")
+plot_paralogs("OG0001044")
+plot_paralogs("OG0001060")
+plot_paralogs("OG0001079")
+plot_paralogs("OG0001091")
+plot_paralogs("OG0001095")
+plot_paralogs("OG0001102")
+plot_paralogs("OG0001129")
+plot_paralogs("OG0001141")
+plot_paralogs("OG0001148")
+plot_paralogs("OG0001171")
+plot_paralogs("OG0001194")
+plot_paralogs("OG0001200")
+plot_paralogs("OG0001203")
+plot_paralogs("OG0001205")
+plot_paralogs("OG0001209")
+plot_paralogs("OG0001223")
+plot_paralogs("OG0001297")
 
-#OG0000749  5.303714  3.082321  6.074614  1.265988  2.495000 5.944943  3.434065  5.732187  1.178734  1.967558
-plot_paralogs("OG0000749")
 
-#OG0000784  3.237085  3.601510 10.141053  2.515502 14.519214 4.217085  3.383158 10.581139  2.543004 14.076923
-plot_paralogs("OG0000784")
+######################################################################
 
-#OG0000760  1.544114  1.647049  1.535229  3.215405  1.271617 1.511038  2.039850  2.060357  3.319786  1.265991
-plot_paralogs("OG0000760")
+# ALL SIMILAR
 
-#OG0000765  1.893011  3.356271  2.177789  1.288507  1.196065 1.179970  1.380102  2.687931  1.225422  2.386671
-plot_paralogs("OG0000765")
+all_similar<-x %>% 
+  filter(length(which(c(MDRo1_max, MDR_p1_max, MDR_p2_max, MDR_p3_max, MDR_p4_max) > 0.7)) == 5 & 
+           length(which(c(MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4) < 1.7)) == 5
+  ) %>% 
+  select(orthogroup, MDR_orth1, MDR_para1, MDR_para2, MDR_para3, MDR_para4) %>% data.frame()
 
-#OG0000805  1.953466  5.103871  1.640552  2.311589  1.345857 1.402595  7.704918  1.370164  3.365170  1.671047
-plot_paralogs("OG0000805")
+plot_paralogs("OG0000663")
+plot_paralogs("OG0000664")
+plot_paralogs("OG0000748")
+plot_paralogs("OG0000786")
+plot_paralogs("OG0001042")
+plot_paralogs("OG0001083")
+plot_paralogs("OG0001114")
+plot_paralogs("OG0001169")
 
-#OG0000819  1.021309  4.224744  1.083244  6.643145  1.703333 1.311555  5.600788  1.569478  8.962190  2.511426
-plot_paralogs("OG0000819")
+
+nrow(one_con_one_div)
+nrow(all_similar)
+nrow(similar_orthologs)
 
 
 
-#OG0000643  4.648703  1.000861  1.164995  1.388293  1.190648
-plot_paralogs("OG0000643")
 
-1 ortholog red/blue similar = 
+
+
+
 
 
 
