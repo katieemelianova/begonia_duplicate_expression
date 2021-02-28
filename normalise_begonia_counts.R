@@ -2,8 +2,8 @@ library(edgeR)
 #library(baySeq)
 
 #read in featurecounts output
-con_counts<-read.table("/Users/katie/Desktop/Bg/begonia_get_fpkms/featurecount/con/con_counts", header=TRUE)
-ple_counts<-read.table("/Users/katie/Desktop/Bg/begonia_get_fpkms/featurecount/ple/ple_counts", header=TRUE)
+con_counts<-read.table("/Users/katie/Desktop/Bg/begonia_duplicate_expression/featurecount/con/con_counts", header=TRUE)
+ple_counts<-read.table("/Users/katie/Desktop/Bg/begonia_duplicate_expression/featurecount/ple/ple_counts", header=TRUE)
 
 
 # gen the gene IDs (these are unique, unlike the Chr column)
@@ -14,6 +14,7 @@ ple_geneid<-sapply(ple_counts$Geneid, function(x) str_split(x, "~~")[[1]][2]) %>
 # prepend them with CON_ and PLE_ to match that of Orthogroups
 con_names<-paste("CON", con_geneid, sep="_")
 ple_names<-paste("PLE", ple_geneid, sep="_")
+
 
 # remove all the path names fro  the column names to make them shorter
 con_cols<-colnames(con_counts) %>% 
