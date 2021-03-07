@@ -17,15 +17,20 @@ ggplot(a, aes(x=c, y=p, size=Freq)) +
   scale_size(range=c(0, 30))
 
 
-hist(ortho$c)
-hist(ortho$p)
-
-con_orthogroups<-data.frame(count=ortho$c, species="con")
-ple_orthogroups<-data.frame(count=ortho$p, species="ple")
-orthogroups<-rbind(test1, test2)
+con_orthogroups<-data.frame(count=ortho$c, species="B. conchifolia")
+ple_orthogroups<-data.frame(count=ortho$p, species="B. plebeja")
+orthogroups<-rbind(con_orthogroups, ple_orthogroups)
 
 
-ggplot(orthogroups, aes(x=count, colour=species, fill=species)) + geom_histogram(alpha=0.8, position = "dodge", bins=11)
+ggplot(orthogroups, aes(x=count, colour=species, fill=species)) + 
+  geom_histogram(alpha=0.8, position = "dodge", bins=11) + 
+  labs(x = "Orthogroup size", y = "Frequency") + 
+  theme(legend.text=element_text(size=15), 
+        legend.title = element_blank(), 
+        axis.title.x=element_text(size=15), 
+        axis.title.y=element_text(size=15),
+        axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))
 
 ###################### GO plots
 ######################
@@ -134,6 +139,7 @@ CONvegBud_specific<-con_avg_cpm %>% filter(CONvegBud > 1 & CONroot < 1 & CONpeti
 
 con_annotation<-read.table("/Users/katie/Desktop/Bg/begonia_duplicate_expression/download_updated/trinotate/con/con_go_annotations_trans.txt")
 
+
 CONfemaleFlower_specific_goterms<-c()
 CONmaleFlower_specific_goterms<-c()
 CONleaf_specific_goterms<-c()
@@ -231,7 +237,7 @@ plot_go_graph(CONmaleFlower_specific_goterms)
 plot_go_graph(CONleaf_specific_goterms)
 plot_go_graph(CONpetiole_specific_goterms)
 plot_go_graph(CONroot_specific_goterms)
-plot_go_graph(CONvegBud_specific_goterms)
+plot_go_graph(CONvegBud_specific_goterms)s
 
 
 
@@ -298,7 +304,8 @@ con_annotation_stats<-data.frame(category=c("gene_id",
                                                    13919, 
                                                    13624, 
                                                    8953, 
-                                                   278))
+                                                   278),
+                                 species="B. conchifolia")
 
 
 
@@ -326,19 +333,80 @@ ple_annotation_stats<-data.frame(category=c("transcript_id",
                                                    9357, 
                                                    3138, 
                                                    3073, 
-                                                   281))
+                                                   281),
+                                 species="B. plebeja")
 
 
 
 
-annotation_stats<-inner_join(con_annotation_stats, ple_annotation_stats, by="category")
-annotation_stats<-melt(annotation_stats)
-colnames(annotation_stats)<-c("category", "species", "count")
-ggplot(annotation_stats, aes(x=category, y=count, colour=species, fill=species)) + geom_bar(stat="identity", position = "dodge") + coord_flip() 
+annotation_stats<-rbind(con_annotation_stats, ple_annotation_stats)
+#colnames(annotation_stats)<-c("Category", "num_transcriopts", "count")
+ggplot(annotation_stats, aes(x=category, y=num_transcripts, colour=species, fill=species)) + 
+  geom_bar(stat="identity", position = "dodge") + 
+  coord_flip() +
+  labs(y = "Number of transcripts", x = "Annotation Category") +
+  theme(legend.text=element_text(size=15),
+        legend.title = element_blank(),
+        axis.title.x=element_text(size=15), 
+        axis.title.y=element_text(size=15),
+        axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))
+        
+
+########################
+######################## histograms of sequence lengths
+
+
+library(seqinr)
+
+decontaminated_con<-"/Volumes/BACKUP3/trimmed_decontaminated/trinity/con/trinity_out_dir/Trinity.fasta"
+contaminated_con<-"/Volumes/BACKUP3/balrog_download/blobplot/con_trimmed_trinity.fasta"
+
+decontaminated_ple<-"/Volumes/BACKUP3/trimmed_decontaminated/trinity/ple/trinity_out_dir/Trinity.fasta"
+contaminated_ple<-"/Volumes/BACKUP3/balrog_download/blobplot/ple_trimmed_trinity.fasta"
+
+
+fs_decon_con <- read.fasta(file = decontaminated_con)
+lengths_decon_con<-getLength(fs_decon_con) 
+fs_decon_ple <- read.fasta(file = decontaminated_ple)
+lengths_decon_ple<-getLength(fs_decon_ple) 
+
+fs_contaminated_con <- read.fasta(file = contaminated_con)
+lengths_contaminated_con<-getLength(fs_contaminated_con) 
+fs_contaminated_ple <- read.fasta(file = contaminated_ple)
+lengths_contaminated_ple<-getLength(fs_contaminated_ple) 
+
+
+lengths_cont_df_con<-data.frame(lengths=lengths_contaminated_con, assembly="contaminated", species="B. conchifolia")
+lengths_cont_df_ple<-data.frame(lengths=lengths_contaminated_ple, assembly="contaminated", species="B. plebeja")
+lengths_decon_df_con<-data.frame(lengths=lengths_decon_con, assembly="decontaminated", species="B. conchifolia")
+lengths_decon_df_ple<-data.frame(lengths=lengths_decon_ple, assembly="decontaminated", species="B. plebeja")
+
+
+lengths_all<-rbind(lengths_cont_df_con, lengths_cont_df_ple, lengths_decon_df_con, lengths_decon_df_ple)
 
 
 
 
+ggplot(lengths_all, aes(x=lengths, colour=assembly, fill=assembly)) + 
+  geom_histogram(alpha=0.8, position = "dodge") + facet_grid(rows = vars(species)) +
+  theme(legend.text=element_text(size=15),
+        legend.title = element_blank(),
+        axis.title.x=element_text(size=15), 
+        axis.title.y=element_text(size=15),
+        axis.text.x= element_text(size=15),
+        axis.text.y= element_text(size=15),
+        strip.text.y = element_text(size = 15, face="italic"))
 
+
+
++ 
+  labs(x = "Orthogroup size", y = "Frequency") + 
+  theme(legend.text=element_text(size=15), 
+        legend.title = element_blank(), 
+        axis.title.x=element_text(size=15), 
+        axis.title.y=element_text(size=15),
+        axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))
 
 
