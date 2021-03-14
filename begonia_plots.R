@@ -1,5 +1,10 @@
 library(ggplot2)
 library(reshape)
+library(stringr)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(UpSetR)
 
 
 
@@ -65,8 +70,8 @@ ple_cols<-colnames(ple_counts) %>%
 colnames(con_counts)<-con_cols
 colnames(ple_counts)<-ple_cols
 
-con_lengths<-con_counts %>% select(Length) %>% set_rownames(con_names)
-ple_lengths<-ple_counts %>% select(Length) %>% set_rownames(ple_names)
+con_lengths<-con_counts %>% dplyr::select(Length) %>% set_rownames(con_names)
+ple_lengths<-ple_counts %>% dplyr::select(Length) %>% set_rownames(ple_names)
 
 # select columns of the counts, excluding chr start end etc info at beginning
 con_counts<-con_counts[,7:23]
@@ -97,6 +102,13 @@ rownames(ple_d_lengths)<-rownames(ple_d$counts)
 ple_d$samples$lib.size<-colSums(ple_d$counts)
 ple_d<-calcNormFactors(ple_d, method="TMM")
 plotMDS(ple_d, method="bcv", col=as.numeric(ple_d$samples$group))
+
+
+
+
+
+
+
 
 
 CONfemaleFlower<-con_d$counts %>% data.frame() %>% select(CONfemaleFlower1, CONfemaleFlower2, CONfemaleFlower3) %>% rpkmByGroup(gene.length=con_d_lengths)  %>% data.frame()
@@ -135,6 +147,63 @@ CONleaf_specific<-con_avg_cpm %>% filter(CONleaf > 1 & CONmaleFlower < 1 & CONro
 CONpetiole_specific<-con_avg_cpm %>% filter(CONpetiole > 1 & CONleaf < 1 & CONmaleFlower < 1 & CONroot < 1 & CONvegBud < 1 & CONfemaleFlower < 1)
 CONroot_specific<-con_avg_cpm %>% filter(CONroot > 1 & CONpetiole < 1 & CONleaf < 1 & CONmaleFlower < 1 & CONvegBud < 1 & CONfemaleFlower < 1)
 CONvegBud_specific<-con_avg_cpm %>% filter(CONvegBud > 1 & CONroot < 1 & CONpetiole < 1 & CONleaf < 1 & CONmaleFlower < 1 & CONfemaleFlower < 1)
+
+
+
+
+##############
+#Upset plots
+
+
+threshold <- 1
+
+con_female_flower_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,1] >=threshold]
+con_leaf_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,2] >=threshold]
+con_male_flower_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,3] >=threshold]
+con_petiole_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,4] >=threshold]
+con_root_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,5] >=threshold]
+con_vegbud_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,6] >=threshold]
+
+ple_female_flower_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,1] >=threshold]
+ple_leaf_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,2] >=threshold]
+ple_male_flower_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,3] >=threshold]
+ple_petiole_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,4] >=threshold]
+ple_root_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,5] >=threshold]
+ple_vegbud_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,6] >=threshold]
+
+
+
+con_listInput <- list(`Female Flower` = con_female_flower_expressed,
+                      `Leaf` = con_leaf_expressed,
+                      `Male Flower` = con_male_flower_expressed,
+                      `Petiole` = con_petiole_expressed,
+                      `Root` = con_root_expressed,
+                      `Vegetative Bud` = con_vegbud_expressed)
+
+ple_listInput <- list(`Female Flower` = ple_female_flower_expressed,
+                      `Leaf` = ple_leaf_expressed,
+                      `Male Flower` = ple_male_flower_expressed,
+                      `Petiole` = ple_petiole_expressed,
+                      `Root` = ple_root_expressed,
+                      `Vegetative Bud` = ple_vegbud_expressed)
+
+
+upset(fromList(con_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
+
+
+upset(fromList(ple_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
+
+
+
+
+
+
+
+
+########## 
+# unique GO terms
+
+
 
 
 con_annotation<-read.table("/Users/katie/Desktop/Bg/begonia_duplicate_expression/download_updated/trinotate/con/con_go_annotations_trans.txt")
@@ -383,6 +452,11 @@ lengths_decon_df_con<-data.frame(lengths=lengths_decon_con, assembly="decontamin
 lengths_decon_df_ple<-data.frame(lengths=lengths_decon_ple, assembly="decontaminated", species="B. plebeja")
 
 
+summary(lengths_cont_df_con$lengths)
+summary(lengths_cont_df_ple$lengths)
+summary(lengths_decon_df_con$lengths)
+summary(lengths_decon_df_ple$lengths)
+
 lengths_all<-rbind(lengths_cont_df_con, lengths_cont_df_ple, lengths_decon_df_con, lengths_decon_df_ple)
 
 
@@ -400,13 +474,56 @@ ggplot(lengths_all, aes(x=lengths, colour=assembly, fill=assembly)) +
 
 
 
-+ 
-  labs(x = "Orthogroup size", y = "Frequency") + 
-  theme(legend.text=element_text(size=15), 
-        legend.title = element_blank(), 
-        axis.title.x=element_text(size=15), 
-        axis.title.y=element_text(size=15),
-        axis.text.x= element_text(size=13),
-        axis.text.y= element_text(size=13))
+
+218053404 - 137985258 = 80,068,146
+155817194 - 91321126 = 64,496,068
+
+
+
+
+CON_TRINITY_DN7494_c0_g4_i1.p1	0.230329434325486	0.289886722381493	0.166170780813023	0.270665689575085	3.86006468757955	0.380225619516734
+CON_TRINITY_DN7494_c0_g5_i1.p1	191.276726805085	267.581819659508	25.0956231462204	19.7273132704664	435.517056768809	513.356783659085
+CON_TRINITY_DN7494_c0_g2_i3.p1	1565.28735741146	1971.196255657	2322.9774115792	770.979463395789	3214.99862952501	3304.14032801424
+CON_TRINITY_DN7494_c0_g1_i13.p1	183.565231128396	292.883151235998	41.1477660463615	130.121051730327	942.283124778468	713.642018992981
+
+con_chs_expression<-data.frame(CON_TRINITY_DN7494_c0_g4_i1.p1 = c(0.230329434325486,	0.289886722381493,	0.166170780813023,	0.270665689575085,	3.86006468757955,	0.380225619516734),
+                               CON_TRINITY_DN7494_c0_g5_i1.p1 = c(191.276726805085,	267.581819659508,	25.0956231462204,	19.7273132704664,	435.517056768809,	513.356783659085),
+                               CON_TRINITY_DN7494_c0_g2_i3.p1 = c(1565.28735741146,	1971.196255657,	2322.9774115792,	770.979463395789,	3214.99862952501,	3304.14032801424),
+                               CON_TRINITY_DN7494_c0_g1_i13.p1 = c(183.565231128396,	292.883151235998,	41.1477660463615,	130.121051730327,	942.283124778468,	713.642018992981))
+
+
+ple_chs_expression<-data.frame(PLE_TRINITY_DN4929_c0_g5_i2.p1 = c(31.6119730339477,	26.9410888580534,	69.2009242254708,	15.5160397134698,	804.359946671473,	185.173077405979),
+                               PLE_TRINITY_DN9097_c0_g2_i1.p1 =	c(246.794250137685,	53.2292660935343,	16.0194086705674,	17.7107494877014,	611.344680363229,	785.535864105495),
+                               PLE_TRINITY_DN5410_c0_g1_i3.p1 =	c(37.3552557854242,	37.3452395471588,	12.7099348554156,	12.4522364769208,	180.030122451022,	167.778021694027),
+                               PLE_TRINITY_DN5410_c0_g2_i4.p1 =	c(117.655957134548,	23.4672838552832,	402.55412922517,	28.9418428440297,	888.978366476492,	304.755142268238),
+                               PLE_TRINITY_DN9097_c0_g1_i2.p1 =	c(908.300401672935,	774.456204138943,	3223.3361436157,	338.767671048236,	1856.8214007426,	1512.51079866489))
+
+
+con_chs_expression <- t(con_chs_expression)
+colnames(con_chs_expression) <- c("femaleFlower"	,"leaf",	"maleFlower"	,"petiole",	"root"	,"vegBud")
+
+ple_chs_expression <- t(ple_chs_expression)
+colnames(ple_chs_expression) <- c("femaleFlower"	,"leaf",	"maleFlower"	,"petiole",	"root"	,"vegBud")
+
+
+test<-rbind(con_chs_expression, ple_chs_expression)
+
+
+pheatmap(test, cluster_rows = FALSE, scale = "column")
+pheatmap(test, cluster_rows = FALSE)
+
+pheatmap(log2(test), cluster_rows = FALSE)
+
+
+
+
+PLE_TRINITY_DN4929_c0_g5_i2.p1 = c(31.6119730339477,	26.9410888580534,	69.2009242254708,	15.5160397134698,	804.359946671473,	185.173077405979),
+PLE_TRINITY_DN9097_c0_g2_i1.p1 =	c(246.794250137685,	53.2292660935343,	16.0194086705674,	17.7107494877014,	611.344680363229,	785.535864105495),
+PLE_TRINITY_DN5410_c0_g1_i3.p1 =	c(37.3552557854242,	37.3452395471588,	12.7099348554156,	12.4522364769208,	180.030122451022,	167.778021694027),
+PLE_TRINITY_DN5410_c0_g2_i4.p1 =	c(117.655957134548,	23.4672838552832,	402.55412922517,	28.9418428440297,	888.978366476492,	304.755142268238),
+PLE_TRINITY_DN9097_c0_g1_i2.p1 =	c(908.300401672935,	774.456204138943,	3223.3361436157,	338.767671048236,	1856.8214007426,	1512.51079866489)
+
+
+
 
 
