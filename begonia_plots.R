@@ -5,7 +5,7 @@ library(magrittr)
 library(dplyr)
 library(tidyr)
 library(UpSetR)
-
+library(ggpubr)
 
 
 ###################### orthogroup histogram and bubble plot
@@ -105,10 +105,8 @@ plotMDS(ple_d, method="bcv", col=as.numeric(ple_d$samples$group))
 
 
 
-
-
-
-
+########## 
+# unique GO terms
 
 
 CONfemaleFlower<-con_d$counts %>% data.frame() %>% select(CONfemaleFlower1, CONfemaleFlower2, CONfemaleFlower3) %>% rpkmByGroup(gene.length=con_d_lengths)  %>% data.frame()
@@ -147,62 +145,6 @@ CONleaf_specific<-con_avg_cpm %>% filter(CONleaf > 1 & CONmaleFlower < 1 & CONro
 CONpetiole_specific<-con_avg_cpm %>% filter(CONpetiole > 1 & CONleaf < 1 & CONmaleFlower < 1 & CONroot < 1 & CONvegBud < 1 & CONfemaleFlower < 1)
 CONroot_specific<-con_avg_cpm %>% filter(CONroot > 1 & CONpetiole < 1 & CONleaf < 1 & CONmaleFlower < 1 & CONvegBud < 1 & CONfemaleFlower < 1)
 CONvegBud_specific<-con_avg_cpm %>% filter(CONvegBud > 1 & CONroot < 1 & CONpetiole < 1 & CONleaf < 1 & CONmaleFlower < 1 & CONfemaleFlower < 1)
-
-
-
-
-##############
-#Upset plots
-
-
-threshold <- 1
-
-con_female_flower_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,1] >=threshold]
-con_leaf_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,2] >=threshold]
-con_male_flower_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,3] >=threshold]
-con_petiole_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,4] >=threshold]
-con_root_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,5] >=threshold]
-con_vegbud_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,6] >=threshold]
-
-ple_female_flower_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,1] >=threshold]
-ple_leaf_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,2] >=threshold]
-ple_male_flower_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,3] >=threshold]
-ple_petiole_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,4] >=threshold]
-ple_root_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,5] >=threshold]
-ple_vegbud_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,6] >=threshold]
-
-
-
-con_listInput <- list(`Female Flower` = con_female_flower_expressed,
-                      `Leaf` = con_leaf_expressed,
-                      `Male Flower` = con_male_flower_expressed,
-                      `Petiole` = con_petiole_expressed,
-                      `Root` = con_root_expressed,
-                      `Vegetative Bud` = con_vegbud_expressed)
-
-ple_listInput <- list(`Female Flower` = ple_female_flower_expressed,
-                      `Leaf` = ple_leaf_expressed,
-                      `Male Flower` = ple_male_flower_expressed,
-                      `Petiole` = ple_petiole_expressed,
-                      `Root` = ple_root_expressed,
-                      `Vegetative Bud` = ple_vegbud_expressed)
-
-
-upset(fromList(con_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
-
-
-upset(fromList(ple_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
-
-
-
-
-
-
-
-
-########## 
-# unique GO terms
-
 
 
 
@@ -297,18 +239,23 @@ plot_go_graph<-function(input_terms){
   df_mf$term_name<-factor(df_mf$term_name, levels = df_mf$term_name[order(df_mf$count, decreasing = FALSE)])
   df_bp$term_name<-factor(df_bp$term_name, levels = df_bp$term_name[order(df_bp$count, decreasing = FALSE)])
   df_cc$term_name<-factor(df_cc$term_name, levels = df_cc$term_name[order(df_cc$count, decreasing = FALSE)])
-  df_toplot<-rbind(df_mf[1:30,], df_bp[1:30,], df_cc[1:30,])
-  ggplot(df_toplot, aes(x=term_name, y=count, colour=ontology, fill=ontology)) + geom_bar(stat="identity") + coord_flip() 
+  df_toplot<-rbind(df_mf[1:25,], df_bp[1:25,], df_cc[1:25,])
+  ggplot(df_toplot, aes(x=term_name, y=count, colour=ontology, fill=ontology)) + geom_bar(stat="identity") + coord_flip()  + theme(axis.text.y=element_text(size=14), axis.title.x=element_blank(), axis.title.y=element_blank())
 }
 
-plot_go_graph(CONfemaleFlower_specific_goterms)
-plot_go_graph(CONmaleFlower_specific_goterms)
-plot_go_graph(CONleaf_specific_goterms)
-plot_go_graph(CONpetiole_specific_goterms)
-plot_go_graph(CONroot_specific_goterms)
-plot_go_graph(CONvegBud_specific_goterms)s
+a<-plot_go_graph(CONfemaleFlower_specific_goterms)
+b<-plot_go_graph(CONmaleFlower_specific_goterms)
+c<-plot_go_graph(CONleaf_specific_goterms)
+d<-plot_go_graph(CONpetiole_specific_goterms)
+e<-plot_go_graph(CONroot_specific_goterms)
+f<-plot_go_graph(CONvegBud_specific_goterms)
 
 
+figure <- ggarrange(a, b, c, d, e, f,
+                    labels = c("A", "B", "C", "D", "E", "F"),
+                    ncol = 3, nrow = 2)
+
+figure
 
 ###################### 
 ######################
@@ -421,6 +368,56 @@ ggplot(annotation_stats, aes(x=category, y=num_transcripts, colour=species, fill
         axis.text.x= element_text(size=13),
         axis.text.y= element_text(size=13))
         
+
+
+
+##############
+##############
+#Upset plots
+
+
+threshold <- 1
+
+con_female_flower_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,1] >=threshold]
+con_leaf_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,2] >=threshold]
+con_male_flower_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,3] >=threshold]
+con_petiole_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,4] >=threshold]
+con_root_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,5] >=threshold]
+con_vegbud_expressed<-rownames(con_avg_cpm)[con_avg_cpm[,6] >=threshold]
+
+ple_female_flower_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,1] >=threshold]
+ple_leaf_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,2] >=threshold]
+ple_male_flower_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,3] >=threshold]
+ple_petiole_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,4] >=threshold]
+ple_root_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,5] >=threshold]
+ple_vegbud_expressed<-rownames(ple_avg_cpm)[ple_avg_cpm[,6] >=threshold]
+
+
+
+con_listInput <- list(`Female Flower` = con_female_flower_expressed,
+                      `Leaf` = con_leaf_expressed,
+                      `Male Flower` = con_male_flower_expressed,
+                      `Petiole` = con_petiole_expressed,
+                      `Root` = con_root_expressed,
+                      `Vegetative Bud` = con_vegbud_expressed)
+
+ple_listInput <- list(`Female Flower` = ple_female_flower_expressed,
+                      `Leaf` = ple_leaf_expressed,
+                      `Male Flower` = ple_male_flower_expressed,
+                      `Petiole` = ple_petiole_expressed,
+                      `Root` = ple_root_expressed,
+                      `Vegetative Bud` = ple_vegbud_expressed)
+
+
+upset(fromList(con_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
+
+
+upset(fromList(ple_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
+
+
+
+
+
 
 ########################
 ######################## histograms of sequence lengths
