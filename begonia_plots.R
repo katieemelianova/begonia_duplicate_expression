@@ -6,6 +6,7 @@ library(dplyr)
 library(tidyr)
 library(UpSetR)
 library(ggpubr)
+library(pheatmap)
 
 
 ###################### orthogroup histogram and bubble plot
@@ -147,9 +148,17 @@ CONroot_specific<-con_avg_cpm %>% filter(CONroot > 1 & CONpetiole < 1 & CONleaf 
 CONvegBud_specific<-con_avg_cpm %>% filter(CONvegBud > 1 & CONroot < 1 & CONpetiole < 1 & CONleaf < 1 & CONmaleFlower < 1 & CONfemaleFlower < 1)
 
 
+PLEfemaleFlower_specific<-ple_avg_cpm %>% filter(PLEfemaleFlower > 1 & PLEroot < 1 & PLEpetiole < 1 & PLEvegBud < 1 & PLEmaleFlower < 1 & PLEleaf < 1)
+PLEmaleFlower_specific<-ple_avg_cpm %>% filter(PLEmaleFlower > 1 & PLEroot < 1 & PLEpetiole < 1 & PLEvegBud < 1 & PLEleaf < 1 & PLEfemaleFlower < 1)
+PLEleaf_specific<-ple_avg_cpm %>% filter(PLEleaf > 1 & PLEmaleFlower < 1 & PLEroot < 1 & PLEpetiole < 1 & PLEvegBud < 1 & PLEfemaleFlower < 1)
+PLEpetiole_specific<-ple_avg_cpm %>% filter(PLEpetiole > 1 & PLEleaf < 1 & PLEmaleFlower < 1 & PLEroot < 1 & PLEvegBud < 1 & PLEfemaleFlower < 1)
+PLEroot_specific<-ple_avg_cpm %>% filter(PLEroot > 1 & PLEpetiole < 1 & PLEleaf < 1 & PLEmaleFlower < 1 & PLEvegBud < 1 & PLEfemaleFlower < 1)
+PLEvegBud_specific<-ple_avg_cpm %>% filter(PLEvegBud > 1 & PLEroot < 1 & PLEpetiole < 1 & PLEleaf < 1 & PLEmaleFlower < 1 & PLEfemaleFlower < 1)
+
+
 
 con_annotation<-read.table("/Users/katie/Desktop/Bg/begonia_duplicate_expression/download_updated/trinotate/con/con_go_annotations_trans.txt")
-
+ple_annotation<-read.table("/Users/katie/Desktop/Bg/begonia_duplicate_expression/download_updated/trinotate/ple/ple_go_annotations_trans.txt")
 
 CONfemaleFlower_specific_goterms<-c()
 CONmaleFlower_specific_goterms<-c()
@@ -157,6 +166,14 @@ CONleaf_specific_goterms<-c()
 CONpetiole_specific_goterms<-c()
 CONroot_specific_goterms<-c()
 CONvegBud_specific_goterms<-c()
+
+PLEfemaleFlower_specific_goterms<-c()
+PLEmaleFlower_specific_goterms<-c()
+PLEleaf_specific_goterms<-c()
+PLEpetiole_specific_goterms<-c()
+PLEroot_specific_goterms<-c()
+PLEvegBud_specific_goterms<-c()
+
 
 for (i in rownames(CONfemaleFlower_specific)){
   seqname<-str_split(i, "[.]")[[1]][1]
@@ -224,6 +241,79 @@ for (i in rownames(CONvegBud_specific)){
   }
 }
 
+########
+
+for (i in rownames(PLEfemaleFlower_specific)){
+  seqname<-str_split(i, "[.]")[[1]][1]
+  seqname<-str_remove(seqname, "PLE_")
+  line<-ple_annotation[ple_annotation$V1 == seqname,]
+  go_terms<-str_split(line$V2, ",")
+  if(length(go_terms) != 0){
+    go_terms = go_terms[[1]]
+    PLEfemaleFlower_specific_goterms <-c(PLEfemaleFlower_specific_goterms, go_terms)
+  }
+}
+
+for (i in rownames(PLEmaleFlower_specific)){
+  seqname<-str_split(i, "[.]")[[1]][1]
+  seqname<-str_remove(seqname, "PLE_")
+  line<-ple_annotation[ple_annotation$V1 == seqname,]
+  go_terms<-str_split(line$V2, ",")
+  if(length(go_terms) != 0){
+    go_terms = go_terms[[1]]
+    PLEmaleFlower_specific_goterms <-c(PLEmaleFlower_specific_goterms, go_terms)
+  }
+}
+
+for (i in rownames(PLEleaf_specific)){
+  seqname<-str_split(i, "[.]")[[1]][1]
+  seqname<-str_remove(seqname, "PLE_")
+  line<-ple_annotation[ple_annotation$V1 == seqname,]
+  go_terms<-str_split(line$V2, ",")
+  if(length(go_terms) != 0){
+    go_terms = go_terms[[1]]
+    PLEeaf_specific_goterms <-c(PLEleaf_specific_goterms, go_terms)
+  }
+}
+
+for (i in rownames(PLEpetiole_specific)){
+  seqname<-str_split(i, "[.]")[[1]][1]
+  seqname<-str_remove(seqname, "PLE_")
+  line<-ple_annotation[ple_annotation$V1 == seqname,]
+  go_terms<-str_split(line$V2, ",")
+  if(length(go_terms) != 0){
+    go_terms = go_terms[[1]]
+    PLEpetiole_specific_goterms <-c(PLEpetiole_specific_goterms, go_terms)
+  }
+}
+
+for (i in rownames(PLEroot_specific)){
+  seqname<-str_split(i, "[.]")[[1]][1]
+  seqname<-str_remove(seqname, "PLE_")
+  line<-ple_annotation[ple_annotation$V1 == seqname,]
+  go_terms<-str_split(line$V2, ",")
+  if(length(go_terms) != 0){
+    go_terms = go_terms[[1]]
+    PLEroot_specific_goterms <-c(PLEroot_specific_goterms, go_terms)
+  }
+}
+
+for (i in rownames(PLEvegBud_specific)){
+  seqname<-str_split(i, "[.]")[[1]][1]
+  seqname<-str_remove(seqname, "PLE_")
+  line<-ple_annotation[ple_annotation$V1 == seqname,]
+  go_terms<-str_split(line$V2, ",")
+  if(length(go_terms) != 0){
+    go_terms = go_terms[[1]]
+    PLEvegBud_specific_goterms <-c(PLEvegBud_specific_goterms, go_terms)
+  }
+}
+
+
+
+
+
+
 
 
 library(GO.db)
@@ -240,8 +330,11 @@ plot_go_graph<-function(input_terms){
   df_bp$term_name<-factor(df_bp$term_name, levels = df_bp$term_name[order(df_bp$count, decreasing = FALSE)])
   df_cc$term_name<-factor(df_cc$term_name, levels = df_cc$term_name[order(df_cc$count, decreasing = FALSE)])
   df_toplot<-rbind(df_mf[1:25,], df_bp[1:25,], df_cc[1:25,])
-  ggplot(df_toplot, aes(x=term_name, y=count, colour=ontology, fill=ontology)) + geom_bar(stat="identity") + coord_flip()  + theme(axis.text.y=element_text(size=14), axis.title.x=element_blank(), axis.title.y=element_blank())
+  df_toplot<-df_toplot %>% drop_na()
+  ggplot(df_toplot, aes(x=term_name, y=count, colour=ontology, fill=ontology)) + geom_bar(stat="identity") + coord_flip()  + theme(axis.text.y=element_text(size=9), axis.title.x=element_blank(), axis.title.y=element_blank())
 }
+
+
 
 a<-plot_go_graph(CONfemaleFlower_specific_goterms)
 b<-plot_go_graph(CONmaleFlower_specific_goterms)
@@ -249,6 +342,30 @@ c<-plot_go_graph(CONleaf_specific_goterms)
 d<-plot_go_graph(CONpetiole_specific_goterms)
 e<-plot_go_graph(CONroot_specific_goterms)
 f<-plot_go_graph(CONvegBud_specific_goterms)
+
+
+a<-plot_go_graph(PLEfemaleFlower_specific_goterms)
+b<-plot_go_graph(PLEmaleFlower_specific_goterms)
+c<-plot_go_graph(PLEleaf_specific_goterms)
+d<-plot_go_graph(PLEpetiole_specific_goterms)
+e<-plot_go_graph(PLEroot_specific_goterms)
+f<-plot_go_graph(PLEvegBud_specific_goterms)
+
+
+length(CONfemaleFlower_specific_goterms)
+length(CONmaleFlower_specific_goterms)
+length(CONleaf_specific_goterms)
+length(CONpetiole_specific_goterms)
+length(CONroot_specific_goterms)
+length(CONvegBud_specific_goterms)
+
+
+length(PLEfemaleFlower_specific_goterms)
+length(PLEmaleFlower_specific_goterms)
+length(PLEleaf_specific_goterms)
+length(PLEpetiole_specific_goterms)
+length(PLEroot_specific_goterms)
+length(PLEvegBud_specific_goterms)
 
 
 figure <- ggarrange(a, b, c, d, e, f,
@@ -259,115 +376,6 @@ figure
 
 ###################### 
 ######################
-
-#GO term annotations plots
-# only problem is that the report generated by trinonotate doesnt provide info about sharing of annotations sources
-# no idea if these overlap
-
-
-# CONCHIFOLIA
-#gene_id	20048
-#transcript_id	20048
-#prot_coords	16756
-#prot_id	16756
-#sprot_Top_BLASTX_hit	16522
-#gene_ontology_BLASTX	16211
-#Kegg	15060
-#sprot_Top_BLASTP_hit	14233
-#gene_ontology_BLASTP	13919
-#Pfam	13624
-#gene_ontology_Pfam	8953
-#eggnog	278
-
-
-# PLEBEJA
-#transcript_id	22241
-##gene_id	22241
-#prot_id	17771
-#prot_coords	17771
-#sprot_Top_BLASTP_hit	15269
-#gene_ontology_BLASTP	14970
-#Kegg	14828
-#Pfam	14305
-#gene_ontology_Pfam	9357
-#sprot_Top_BLASTX_hit	3138
-#gene_ontology_BLASTX	3073
-#eggnog	281
-
-
-
-
-con_annotation_stats<-data.frame(category=c("gene_id", 
-                                            "transcript_id", 
-                                            "prot_coords", 
-                                            "prot_id", 
-                                            "sprot_Top_BLASTX_hit", 
-                                            "gene_ontology_BLASTX", 
-                                            "Kegg", 
-                                            "sprot_Top_BLASTP_hit", 
-                                            "gene_ontology_BLASTP", 
-                                            "Pfam", 
-                                            "gene_ontology_Pfam", 
-                                            "eggnog"),
-                                 num_transcripts=c(20048, 
-                                                   20048, 
-                                                   16756, 
-                                                   16756, 
-                                                   16522, 
-                                                   16211, 
-                                                   15060, 
-                                                   14233, 
-                                                   13919, 
-                                                   13624, 
-                                                   8953, 
-                                                   278),
-                                 species="B. conchifolia")
-
-
-
-
-ple_annotation_stats<-data.frame(category=c("transcript_id", 
-                                            "gene_id", 
-                                            "prot_id", 
-                                            "prot_coords", 
-                                            "sprot_Top_BLASTP_hit", 
-                                            "gene_ontology_BLASTP", 
-                                            "Kegg", 
-                                            "Pfam", 
-                                            "gene_ontology_Pfam", 
-                                            "sprot_Top_BLASTX_hit", 
-                                            "gene_ontology_BLASTX", 
-                                            "eggnog"),
-                                 num_transcripts=c(22241, 
-                                                   22241, 
-                                                   17771, 
-                                                   17771, 
-                                                   15269, 
-                                                   14970, 
-                                                   14828, 
-                                                   14305, 
-                                                   9357, 
-                                                   3138, 
-                                                   3073, 
-                                                   281),
-                                 species="B. plebeja")
-
-
-
-
-annotation_stats<-rbind(con_annotation_stats, ple_annotation_stats)
-#colnames(annotation_stats)<-c("Category", "num_transcriopts", "count")
-ggplot(annotation_stats, aes(x=category, y=num_transcripts, colour=species, fill=species)) + 
-  geom_bar(stat="identity", position = "dodge") + 
-  coord_flip() +
-  labs(y = "Number of transcripts", x = "Annotation Category") +
-  theme(legend.text=element_text(size=15),
-        legend.title = element_blank(),
-        axis.title.x=element_text(size=15), 
-        axis.title.y=element_text(size=15),
-        axis.text.x= element_text(size=13),
-        axis.text.y= element_text(size=13))
-        
 
 
 
@@ -472,38 +480,33 @@ ggplot(lengths_all, aes(x=lengths, colour=assembly, fill=assembly)) +
 
 
 
-218053404 - 137985258 = 80,068,146
-155817194 - 91321126 = 64,496,068
+CON_TRINITY_DN7494_c0_g1_i13 = c(125.100449245035,	198.371872561107,	27.5750096387708,	87.9648832920222,	576.921038683795,	497.63994605491),
+CON_TRINITY_DN7494_c0_g4_i1 = c(0.157425406751893,	0.198647581483009,	0.112911650006348,	0.187629954492802,	2.42180462748974,	0.270607978612891),
+CON_TRINITY_DN7494_c0_g5_i1 = c(132.759671977685,	185.082362877332,	17.1353878223157,	13.6595518410768,	278.794311267313,	365.584617551438),
+CON_TRINITY_DN7494_c0_g2_i3 = c(1079.21105353443,	1355.12934525355,	1578.51236944914,	530.944363270742,	2050.25822525919,	2350.4780647317)
 
 
 
-
-CON_TRINITY_DN7494_c0_g4_i1.p1	0.230329434325486	0.289886722381493	0.166170780813023	0.270665689575085	3.86006468757955	0.380225619516734
-CON_TRINITY_DN7494_c0_g5_i1.p1	191.276726805085	267.581819659508	25.0956231462204	19.7273132704664	435.517056768809	513.356783659085
-CON_TRINITY_DN7494_c0_g2_i3.p1	1565.28735741146	1971.196255657	2322.9774115792	770.979463395789	3214.99862952501	3304.14032801424
-CON_TRINITY_DN7494_c0_g1_i13.p1	183.565231128396	292.883151235998	41.1477660463615	130.121051730327	942.283124778468	713.642018992981
-
-con_chs_expression<-data.frame(CON_TRINITY_DN7494_c0_g4_i1.p1 = c(0.230329434325486,	0.289886722381493,	0.166170780813023,	0.270665689575085,	3.86006468757955,	0.380225619516734),
-                               CON_TRINITY_DN7494_c0_g5_i1.p1 = c(191.276726805085,	267.581819659508,	25.0956231462204,	19.7273132704664,	435.517056768809,	513.356783659085),
-                               CON_TRINITY_DN7494_c0_g2_i3.p1 = c(1565.28735741146,	1971.196255657,	2322.9774115792,	770.979463395789,	3214.99862952501,	3304.14032801424),
-                               CON_TRINITY_DN7494_c0_g1_i13.p1 = c(183.565231128396,	292.883151235998,	41.1477660463615,	130.121051730327,	942.283124778468,	713.642018992981))
+PLE_TRINITY_DN4929_c0_g5_i2 = c(22.9793092298,	19.0577362046377,	50.1597318327533,	11.9099250336282,	635.852980027475,	139.94768603552),
+PLE_TRINITY_DN4929_c0_g4_i3 = c(6.52592654631693,	2.06438283136467,	8.56467592589611,	9.50761752902403,	14.9072008153857,	6.77871413195937),
+PLE_TRINITY_DN9097_c0_g2_i1 = c(193.225158625332,	38.9603206234101,	12.264579202113,	13.6518806166165,	493.23784385718,	606.763808065943),
+PLE_TRINITY_DN4929_c0_g1_i2 = c(924.596399332199,	791.108169198113,	2903.54928095096,	408.091974087824,	1889.47347541453,	1911.29304864381)
 
 
-ple_chs_expression<-data.frame(PLE_TRINITY_DN4929_c0_g5_i2.p1 = c(31.6119730339477,	26.9410888580534,	69.2009242254708,	15.5160397134698,	804.359946671473,	185.173077405979),
-                               PLE_TRINITY_DN9097_c0_g2_i1.p1 =	c(246.794250137685,	53.2292660935343,	16.0194086705674,	17.7107494877014,	611.344680363229,	785.535864105495),
-                               PLE_TRINITY_DN5410_c0_g1_i3.p1 =	c(37.3552557854242,	37.3452395471588,	12.7099348554156,	12.4522364769208,	180.030122451022,	167.778021694027),
-                               PLE_TRINITY_DN5410_c0_g2_i4.p1 =	c(117.655957134548,	23.4672838552832,	402.55412922517,	28.9418428440297,	888.978366476492,	304.755142268238),
-                               PLE_TRINITY_DN9097_c0_g1_i2.p1 =	c(908.300401672935,	774.456204138943,	3223.3361436157,	338.767671048236,	1856.8214007426,	1512.51079866489))
 
+test<-data.frame(CON_TRINITY_DN7494_c0_g2_i3 = c(1079.21105353443,	1355.12934525355,	1578.51236944914,	530.944363270742,	2050.25822525919,	2350.4780647317),
+                 PLE_TRINITY_DN4929_c0_g1_i2 = c(924.596399332199,	791.108169198113,	2903.54928095096,	408.091974087824,	1889.47347541453,	1911.29304864381),
+                 CON_TRINITY_DN7494_c0_g1_i13 = c(125.100449245035,	198.371872561107,	27.5750096387708,	87.9648832920222,	576.921038683795,	497.63994605491),
+                 PLE_TRINITY_DN4929_c0_g5_i2 = c(22.9793092298,	19.0577362046377,	50.1597318327533,	11.9099250336282,	635.852980027475,	139.94768603552),
+                 CON_TRINITY_DN7494_c0_g4_i1 = c(0.157425406751893,	0.198647581483009,	0.112911650006348,	0.187629954492802,	2.42180462748974,	0.270607978612891),
+                 PLE_TRINITY_DN4929_c0_g4_i3 = c(6.52592654631693,	2.06438283136467,	8.56467592589611,	9.50761752902403,	14.9072008153857,	6.77871413195937),
+                 CON_TRINITY_DN7494_c0_g5_i1 = c(132.759671977685,	185.082362877332,	17.1353878223157,	13.6595518410768,	278.794311267313,	365.584617551438),
+                 PLE_TRINITY_DN9097_c0_g2_i1 = c(193.225158625332,	38.9603206234101,	12.264579202113,	13.6518806166165,	493.23784385718,	606.763808065943)
+                 )
 
-con_chs_expression <- t(con_chs_expression)
-colnames(con_chs_expression) <- c("femaleFlower"	,"leaf",	"maleFlower"	,"petiole",	"root"	,"vegBud")
+test<-t(test)
+colnames(test) <- c("femaleFlower"	,"leaf",	"maleFlower"	,"petiole",	"root"	,"vegBud")
 
-ple_chs_expression <- t(ple_chs_expression)
-colnames(ple_chs_expression) <- c("femaleFlower"	,"leaf",	"maleFlower"	,"petiole",	"root"	,"vegBud")
-
-
-test<-rbind(con_chs_expression, ple_chs_expression)
 
 
 pheatmap(test, cluster_rows = FALSE, scale = "column")
@@ -514,11 +517,164 @@ pheatmap(log2(test), cluster_rows = FALSE)
 
 
 
-PLE_TRINITY_DN4929_c0_g5_i2.p1 = c(31.6119730339477,	26.9410888580534,	69.2009242254708,	15.5160397134698,	804.359946671473,	185.173077405979),
-PLE_TRINITY_DN9097_c0_g2_i1.p1 =	c(246.794250137685,	53.2292660935343,	16.0194086705674,	17.7107494877014,	611.344680363229,	785.535864105495),
-PLE_TRINITY_DN5410_c0_g1_i3.p1 =	c(37.3552557854242,	37.3452395471588,	12.7099348554156,	12.4522364769208,	180.030122451022,	167.778021694027),
-PLE_TRINITY_DN5410_c0_g2_i4.p1 =	c(117.655957134548,	23.4672838552832,	402.55412922517,	28.9418428440297,	888.978366476492,	304.755142268238),
-PLE_TRINITY_DN9097_c0_g1_i2.p1 =	c(908.300401672935,	774.456204138943,	3223.3361436157,	338.767671048236,	1856.8214007426,	1512.51079866489)
+
+########## annotation statistics
+
+library(readr)
+con_annot<-read_tsv("con_trinotate_annotation_report.txt")
+ple_annot<-read_tsv("ple_trinotate_annotation_report.txt")
+
+
+x<-ple_annot %>% 
+  rowwise() %>% 
+  filter(length(which(c(sprot_Top_BLASTX_hit, 
+                        sprot_Top_BLASTP_hit, 
+                        Pfam, 
+                        eggnog, 
+                        Kegg, 
+                        gene_ontology_BLASTX, 
+                        gene_ontology_BLASTP, 
+                        gene_ontology_Pfam) == ".")) == 8)
+
+completely_unannotated<-x %>% dplyr::select(transcript_id) %>% pull() %>% unique() %>% length()
+
+
+
+con_blastx_annot<-con_annot %>% filter(sprot_Top_BLASTX_hit != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_blastp_annot<-con_annot %>% filter(sprot_Top_BLASTP_hit != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_pfam_annot<-con_annot %>% filter(Pfam != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_eggnog_annot<-con_annot %>% filter(eggnog != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_kegg_annot<-con_annot %>% filter(Kegg != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_GOblastx_annot<-con_annot %>% filter(gene_ontology_BLASTX != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_GOblastp_annot<-con_annot %>% filter(gene_ontology_BLASTP != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+con_GOpfam_annot<-con_annot %>% filter(gene_ontology_Pfam != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+
+
+ple_blastx_annot<-ple_annot %>% filter(sprot_Top_BLASTX_hit != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_blastp_annot<-ple_annot %>% filter(sprot_Top_BLASTP_hit != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_pfam_annot<-ple_annot %>% filter(Pfam != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_eggnog_annot<-ple_annot %>% filter(eggnog != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_kegg_annot<-ple_annot %>% filter(Kegg != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_GOblastx_annot<-ple_annot %>% filter(gene_ontology_BLASTX != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_GOblastp_annot<-ple_annot %>% filter(gene_ontology_BLASTP != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_GOpfam_annot<-ple_annot %>% filter(gene_ontology_Pfam != ".") %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+
+
+
+con_listInput<-list(blastx = con_blastx_annot,
+                    blasp = con_blastp_annot,
+                    pfam = con_pfam_annot,
+                    eggnog = con_eggnog_annot,
+                    kegg = con_kegg_annot,
+                    GOblastx = con_GOblastx_annot,
+                    GOblastp = con_GOblastp_annot,
+                    GOpfam = con_GOpfam_annot)
+
+
+ple_listInput<-list(blastx = ple_blastx_annot,
+                    blasp = ple_blastp_annot,
+                    pfam = ple_pfam_annot,
+                    eggnog = ple_eggnog_annot,
+                    kegg = ple_kegg_annot,
+                    GOblastx = ple_GOblastx_annot,
+                    GOblastp = ple_GOblastp_annot,
+                    GOpfam = ple_GOpfam_annot)
+
+
+upset(fromList(con_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
+upset(fromList(ple_listInput), order.by = "freq", nsets=6, text.scale = c(2, 2, 1.8, 1.8, 2, 1.9))
+
+
+
+########
+#GO term annotations plots
+
+con_total<-con_annot %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+ple_total<-ple_annot %>% dplyr::select(transcript_id) %>% pull() %>% unique()
+
+
+length(con_total)
+length(con_blastx_annot)
+length(con_blastp_annot)
+length(con_pfam_annot)
+length(con_eggnog_annot)
+length(con_kegg_annot)
+length(con_GOblastx_annot)
+length(con_GOblastp_annot)
+length(con_GOpfam_annot)
+
+length(ple_total)
+length(ple_blastx_annot)
+length(ple_blastp_annot)
+length(ple_pfam_annot)
+length(ple_eggnog_annot)
+length(ple_kegg_annot)
+length(ple_GOblastx_annot)
+length(ple_GOblastp_annot)
+length(ple_GOpfam_annot)
+  
+
+
+con_annotation_stats<-data.frame(category=c("total",
+                                            "sprot_Top_BLASTX_hit", 
+                                            "sprot_Top_BLASTP_hit",
+                                            "Pfam",
+                                            "eggnog",
+                                            "Kegg",
+                                            "gene_ontology_BLASTX", 
+                                            "gene_ontology_BLASTP", 
+                                            "gene_ontology_Pfam"
+                                            ),
+                                 num_transcripts=c(17012,
+                                                   13629,
+                                                   12333,
+                                                   12100,
+                                                   236,
+                                                   12440,
+                                                   13374,
+                                                   12104,
+                                                   8219),
+                                 species="B. conchifolia")
+
+
+
+
+ple_annotation_stats<-data.frame(category=c("total",
+                                            "sprot_Top_BLASTX_hit", 
+                                            "sprot_Top_BLASTP_hit",
+                                            "Pfam",
+                                            "eggnog",
+                                            "Kegg",
+                                            "gene_ontology_BLASTX", 
+                                            "gene_ontology_BLASTP", 
+                                            "gene_ontology_Pfam"),
+                                 num_transcripts=c(19969,
+                                                   2945,
+                                                   13840,
+                                                   13214,
+                                                   269,
+                                                   13551,
+                                                   2884,
+                                                   13590,
+                                                   8862),
+                                 species="B. plebeja")
+
+
+
+
+annotation_stats<-rbind(con_annotation_stats, ple_annotation_stats)
+#colnames(annotation_stats)<-c("Category", "num_transcriopts", "count")
+ggplot(annotation_stats, aes(x=category, y=num_transcripts, colour=species, fill=species)) + 
+  geom_bar(stat="identity", position = "dodge") + 
+  coord_flip() +
+  labs(y = "Number of transcripts", x = "Annotation Category") +
+  theme(legend.text=element_text(size=15, face="italic"),
+        legend.title = element_blank(),
+        axis.title.x=element_text(size=15), 
+        axis.title.y=element_text(size=15),
+        axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))
+
 
 
 
